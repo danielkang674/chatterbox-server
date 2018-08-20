@@ -11,8 +11,27 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+let ericsLoveNotes = {};
+ericsLoveNotes.results = [];
 
-var requestHandler = function(request, response) {
+// These headers will allow Cross-Origin Resource Sharing (CORS).
+// This code allows this server to talk to websites that
+// are on different domains, for instance, your chat client.
+//
+// Your chat client is running from a url like file://your/chat/client/index.html,
+// which is considered a different domain.
+//
+// Another way to get around this restriction is to serve you chat
+// client from this domain by setting up static file serving.
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
+
+var requestHandler = function (request, response) {
+
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -39,7 +58,9 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+
+  // headers['Content-Type'] = 'text/plain';
+  // headers['Content-Type'] = 'application/json';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -52,22 +73,54 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+
+
+  // handle route classes/messages
+  if (request.method === 'GET' && request.url === '/ericsdirtysecret') {
+    headers['Content-Type'] = 'text/plain';
+    response.end('he loves bell peppers');
+  } else if (request.method === 'GET' && request.url === '/rickandmorty') {
+    headers['Content-Type'] = 'text/plain';
+    response.end('Pickle Rick! Unity! Council of Ricks! Loser!');
+  } else if (request.method === 'GET' && request.url === '/eric') {
+    headers['Content-Type'] = 'text/html';
+    // response.end('<img src="https://gph.is/2c34Dbt"></img>');
+    response.end('<h1>hi</h1>');
+  } else if (request.method === 'GET' && request.url === '/classes/messages') {
+    headers['Content-Type'] = 'application/json';
+    response.end(JSON.stringify(ericsLoveNotes));
+  } else if (request.method === 'POST' && request.url === '/classes/messages') {
+    // user input
+    let message = '';
+    // getting the stream of data
+    request.on('data', chunk => {
+      message += chunk.toString();
+    });
+    // after getting all of the data stream
+    request.on('end', () => {
+      response.writeHead(201, headers);
+      headers['Content-Type'] = 'application/json';
+      // parse the message
+      ericsLoveNotes.results.push(JSON.parse(message));
+      response.end(JSON.stringify(ericsLoveNotes));
+    });
+  } else {
+    // nonexistent endpoint
+    response.writeHead(404, headers);
+    headers['Content-Type'] = 'text/plain';
+    response.end('i dunno');
+  }
+
+
+  // && request.url === '/ericsdirtysecret'
+
+
+
+
+
+
 };
 
-// These headers will allow Cross-Origin Resource Sharing (CORS).
-// This code allows this server to talk to websites that
-// are on different domains, for instance, your chat client.
-//
-// Your chat client is running from a url like file://your/chat/client/index.html,
-// which is considered a different domain.
-//
-// Another way to get around this restriction is to serve you chat
-// client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
 
+
+module.exports.requestHandler = requestHandler;

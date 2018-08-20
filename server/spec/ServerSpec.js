@@ -75,6 +75,7 @@ describe('Node Server Request Listener Function', function() {
     expect(res._ended).to.equal(true);
   });
 
+
   it('Should respond with messages that were previously posted', function() {
     var stubMsg = {
       username: 'Jono',
@@ -96,6 +97,7 @@ describe('Node Server Request Listener Function', function() {
     expect(res._responseCode).to.equal(200);
     var messages = JSON.parse(res._data).results;
     expect(messages.length).to.be.above(0);
+    console.log(messages[0]);
     expect(messages[0].username).to.equal('Jono');
     expect(messages[0].text).to.equal('Do my bidding!');
     expect(res._ended).to.equal(true);
@@ -115,5 +117,28 @@ describe('Node Server Request Listener Function', function() {
         expect(res._responseCode).to.equal(404);
       });
   });
+
+  // New tests 
+
+  it('should return `he loves bell peppers` when accessing ericsdirtysecret route', function() {
+    var req = new stubs.request('/ericsdirtysecret', 'GET'); 
+    var res = new stubs.response();
+
+    handler.requestHandler(req, res);
+    
+    expect(res._data).to.equal('he loves bell peppers');
+
+  });
+
+  it('should return `Pickle Rick! Unity! Council of Ricks! Loser!` when accessing rickandmorty route', function() {
+    var req = new stubs.request('/rickandmorty', 'GET'); 
+    var res = new stubs.response();
+
+    handler.requestHandler(req, res);
+    
+    expect(res._data).to.equal('Pickle Rick! Unity! Council of Ricks! Loser!');
+
+  });
+
 
 });
