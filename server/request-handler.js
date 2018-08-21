@@ -12,7 +12,8 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 let ericsLoveNotes = {};
-ericsLoveNotes.results = [];
+ericsLoveNotes.results = [{ objectId: 1, username: "dk", text: 'yo', roomname: 'lobby' }];
+let id = 2;
 var fs = require('fs');
 var path = require('path');
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -80,28 +81,61 @@ var requestHandler = function (request, response) {
   var regex = `/username/g`;
   if (request.method === 'GET' && request.url === '/' || request.url.includes('username')) {
     fs.readFile(path.join(__dirname, '../client/index.html'), function (err, data) {
-      if (err) { 
-        console.error('Houston, we have a problem!' , err); 
-      } else { 
-        headers['Content-Type'] = 'text/html';  
-        headers['charset'] = 'utf-8'; 
-        response.writeHead(200, headers); 
-        response.end(data);   
-      } 
+      if (err) {
+        console.error('Houston, we have a problem!', err);
+      } else {
+        headers['Content-Type'] = 'text/html';
+        headers['charset'] = 'utf-8';
+        response.writeHead(200, headers);
+        response.end(data);
+      }
     });
   } else if (request.method === 'GET' && request.url === '/styles.css') {
     // do stuff
-    fs.readFile(path.join(__dirname, '../styles.css'), function(err, data) {
-      if(err) { 
-        console.error('Style Sad');
-      }  else { 
-        headers['Content-Type'] = 'text/html'; 
-        headers['charset'] = 'utf-8'; 
-        response.writeHead(200, headers); 
-        response.end(data); 
+    fs.readFile(path.join(__dirname, '../client/styles/styles.css'), function (err, data) {
+      if (err) {
+        console.error('Style Sad', err);
+      } else {
+        headers['Content-Type'] = 'text/css';
+        headers['charset'] = 'utf-8';
+        response.writeHead(200, headers);
+        response.end(data);
       }
     });
-  
+  } else if (request.method === 'GET' && request.url === '/bower_components/jquery/dist/jquery.js') {
+    fs.readFile(path.join(__dirname, '../client/bower_components/jquery/dist/jquery.js'), (err, data) => {
+      if (err) {
+        console.error('Find jquery', err);
+      } else {
+        headers['Content-Type'] = 'application/javascript';
+        headers['charset'] = 'utf-8';
+        response.writeHead(200, headers);
+        response.end(data);
+      }
+    });
+  } else if (request.method === 'GET' && request.url === '/client/scripts/app.js') {
+    fs.readFile(path.join(__dirname, '../client/scripts/app.js'), (err, data) => {
+      if (err) {
+        console.error('Try app.js again', err);
+
+      } else {
+        headers['Content-Type'] = 'application/javascript';
+        headers['charset'] = 'utf-8';
+        response.writeHead(200, headers);
+        response.end(data);
+      }
+    });
+  } else if (request.method === 'GET' && request.url === '/client/images/spiffygif_46x46.gif') {
+    fs.readFile(path.join(__dirname, '../client/images/spiffygif_46x46.gif'), (err, data) => {
+      if (err) {
+        console.error('Try gif again', err);
+
+      } else {
+        headers['Content-Type'] = 'image/gif';
+        response.writeHead(200, headers);
+        response.end(data);
+      }
+    });
   } else if (request.method === 'GET' && request.url === '/ericsdirtysecret') {
     headers['Content-Type'] = 'text/plain';
     response.end('he loves bell peppers');
@@ -128,10 +162,12 @@ var requestHandler = function (request, response) {
     request.on('end', () => {
       // parse the message
       let parsedMessage = JSON.parse(message);
+      parsedMessage.objectId = id;
+      id++;
       if (parsedMessage.username && parsedMessage.text) {
         headers['Content-Type'] = 'application/json';
         response.writeHead(201, headers);
-        ericsLoveNotes.results.push(JSON.parse(message));
+        ericsLoveNotes.results.push(parsedMessage);
         response.end(JSON.stringify(ericsLoveNotes));
       } else {
         headers['Content-Type'] = 'text/plain';

@@ -32,7 +32,7 @@ var app = {
     // Poll for new messages
     setInterval(function() {
       app.fetch(true);
-    }, 3000);
+    }, 10000);
   },
 
   send: function(message) {
@@ -68,6 +68,8 @@ var app = {
 
         // Store messages for caching later
         app.messages = data.results;
+
+        console.log(app.messages);
 
         // Get the last message
         var mostRecentMessage = data.results[data.results.length - 1];
