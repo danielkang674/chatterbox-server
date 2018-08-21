@@ -13,7 +13,8 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 let ericsLoveNotes = {};
 ericsLoveNotes.results = [];
-
+var fs = require('fs');
+var path = require('path');
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
 // are on different domains, for instance, your chat client.
@@ -76,8 +77,31 @@ var requestHandler = function (request, response) {
 
 
   // handle route classes/messages
-  if (request.method === 'GET' && request.url === '/') {
-    response.end('working on it');
+  var regex = `/username/g`;
+  if (request.method === 'GET' && request.url === '/' || request.url.includes('username')) {
+    fs.readFile(path.join(__dirname, '../client/index.html'), function (err, data) {
+      if (err) { 
+        console.error('Houston, we have a problem!' , err); 
+      } else { 
+        headers['Content-Type'] = 'text/html';  
+        headers['charset'] = 'utf-8'; 
+        response.writeHead(200, headers); 
+        response.end(data);   
+      } 
+    });
+  } else if (request.method === 'GET' && request.url === '/styles.css') {
+    // do stuff
+    fs.readFile(path.join(__dirname, '../styles.css'), function(err, data) {
+      if(err) { 
+        console.error('Style Sad');
+      }  else { 
+        headers['Content-Type'] = 'text/html'; 
+        headers['charset'] = 'utf-8'; 
+        response.writeHead(200, headers); 
+        response.end(data); 
+      }
+    });
+  
   } else if (request.method === 'GET' && request.url === '/ericsdirtysecret') {
     headers['Content-Type'] = 'text/plain';
     response.end('he loves bell peppers');
@@ -119,7 +143,8 @@ var requestHandler = function (request, response) {
     // nonexistent endpoint
     headers['Content-Type'] = 'text/plain';
     response.writeHead(404, headers);
-    response.end('i dunno');
+    console.log(request.url);
+    response.end('I dunno');
   }
 
 };
