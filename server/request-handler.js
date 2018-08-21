@@ -76,7 +76,9 @@ var requestHandler = function (request, response) {
 
 
   // handle route classes/messages
-  if (request.method === 'GET' && request.url === '/ericsdirtysecret') {
+  if (request.method === 'GET' && request.url === '/') {
+    response.end('working on it');
+  } else if (request.method === 'GET' && request.url === '/ericsdirtysecret') {
     headers['Content-Type'] = 'text/plain';
     response.end('he loves bell peppers');
   } else if (request.method === 'GET' && request.url === '/rickandmorty') {
@@ -84,10 +86,12 @@ var requestHandler = function (request, response) {
     response.end('Pickle Rick! Unity! Council of Ricks! Loser!');
   } else if (request.method === 'GET' && request.url === '/eric') {
     headers['Content-Type'] = 'text/html';
-    // response.end('<img src="https://gph.is/2c34Dbt"></img>');
-    response.end('<h1>hi</h1>');
+    headers['charset'] = 'utf-8';
+    response.writeHead(statusCode, headers);
+    response.end('<img src="https://media.tenor.com/images/1b2c509c673b603557eedf392c9f3d96/tenor.gif"></img><img src="https://i.ytimg.com/vi/dHGrAsCQWhg/maxresdefault.jpg"></img>');
   } else if (request.method === 'GET' && request.url === '/classes/messages') {
     headers['Content-Type'] = 'application/json';
+    response.writeHead(statusCode, headers);
     response.end(JSON.stringify(ericsLoveNotes));
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
     // user input
@@ -98,26 +102,25 @@ var requestHandler = function (request, response) {
     });
     // after getting all of the data stream
     request.on('end', () => {
-      response.writeHead(201, headers);
-      headers['Content-Type'] = 'application/json';
       // parse the message
-      ericsLoveNotes.results.push(JSON.parse(message));
-      response.end(JSON.stringify(ericsLoveNotes));
+      let parsedMessage = JSON.parse(message);
+      if (parsedMessage.username && parsedMessage.text) {
+        headers['Content-Type'] = 'application/json';
+        response.writeHead(201, headers);
+        ericsLoveNotes.results.push(JSON.parse(message));
+        response.end(JSON.stringify(ericsLoveNotes));
+      } else {
+        headers['Content-Type'] = 'text/plain';
+        response.writeHead(400, headers);
+        response.end('GTFO');
+      }
     });
   } else {
     // nonexistent endpoint
-    response.writeHead(404, headers);
     headers['Content-Type'] = 'text/plain';
+    response.writeHead(404, headers);
     response.end('i dunno');
   }
-
-
-  // && request.url === '/ericsdirtysecret'
-
-
-
-
-
 
 };
 
